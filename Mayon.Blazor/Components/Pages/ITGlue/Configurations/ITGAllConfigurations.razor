@@ -1,0 +1,59 @@
+﻿@page "/ITGConfigurations"
+@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@using Microsoft.Extensions.Caching.Memory
+@using Newtonsoft.Json
+@using Syncfusion.Blazor.Grids
+
+@inject ITGlueAPIConfigurations itGlueApiConfigs
+@inject IMemoryCache memoryCache
+
+@code {
+    List<ITGConfigData> itGlueConfigs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetITGConfigurations();
+    }
+
+    private async Task GetITGConfigurations()
+    {
+        try
+                {
+                    if (!memoryCache.TryGetValue("itGlueConfigCache", out List<ITGConfigData>? cachedData))
+                    {
+                        cachedData = (await itGlueApiConfigs.GetITGAllConfigsAsync()).ToList() ?? new List<ITGConfigData>();
+                        var cacheEntryOptions = new MemoryCacheEntryOptions()
+                            .SetSlidingExpiration(TimeSpan.FromMinutes(30)); // Adjust time as needed
+                        memoryCache.Set("itGlueConfigCache", cachedData, cacheEntryOptions);
+                    }
+                    itGlueConfigs = cachedData.Where(c => !c.Attributes.Archived).ToList();
+
+                    // Log each item in the list (optional, based on list size)
+                    foreach (var item in itGlueConfigs)
+                    {
+                        Serilog.Log.Error($"Item: {JsonConvert.SerializeObject(item)}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Serilog.Log.Error(ex, "An error occurred while getting ITG configurations");
+                }
+    }
+}
+
+@if (itGlueConfigs != null && itGlueConfigs.Any())
+{
+    <SfGrid DataSource="@itGlueConfigs" AllowPaging="true" AllowSorting="true">
+        <GridColumns>
+            <GridColumn Field=@nameof(ITGConfigData.Id) HeaderText="ID" />
+            <GridColumn Field=@nameof(ITGConfigData.Attributes.Name) HeaderText="Name" />
+            <GridColumn Field=@nameof(ITGConfigData.Attributes.ConfigurationTypeName) HeaderText="Type" />
+            <GridColumn Field=@nameof(ITGConfigData.Attributes.ConfigurationStatusName) HeaderText="Status" />
+        </GridColumns>
+    </SfGrid>
+}
+else
+{
+    <p>Loading configurations...</p>
+}

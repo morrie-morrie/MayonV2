@@ -1,0 +1,119 @@
+﻿@page "/ITGOrgSearch"
+@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Caching.Memory
+@inject ITGlueAPIOrganisations itGlueApiOrgs
+@inject ITGlueAPIConfigurations itGlueApiConfigs
+@inject IMemoryCache memoryCache
+
+<h3>Search for an Organization</h3>
+
+<EditForm Model="@this" OnValidSubmit="@SearchOrganization">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (allOrganizations != null)
+    {
+        Serilog.Log.Information("AllOrganizations");
+
+        <InputSelect @bind-Value="selectedOrgId">
+            <option value="">-- Select an Organization --</option>
+            @foreach (var org in allOrganizations)
+            {
+                <option value="@org.Id">@org.Attributes?.Name</option>
+            }
+        </InputSelect>
+    }
+    else
+    {
+        <p>Loading organizations...</p>
+    }
+
+    <button type="submit">Search</button>
+</EditForm>
+
+@if (searchedOrg != null)
+{
+    Serilog.Log.Information("SearchedOrgs");
+    <div>
+        <h4>ID: @searchedOrg.Id - @searchedOrg.Attributes?.Name</h4>
+        <p>Created At: @searchedOrg.Attributes?.CreatedAt</p>
+    </div>
+
+    @if (configurations.Any())
+    {
+        Serilog.Log.Information("ConfigurationsAny");
+        <h3>Active Configurations - @configurations.Count</h3>
+        <ul>
+            @foreach (var config in configurations)
+            {
+                <li>@config.Attributes.Name (ID: @config.Id, Type: @config.Attributes.ConfigurationTypeName)</li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p>No active configurations found for this organization.</p>
+    }
+}
+else if (searchInitiated && searchedOrg == null)
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private string selectedOrgId = "";
+    private ITGOrgData? searchedOrg;
+    private List<ITGConfigData> configurations = new List<ITGConfigData>();
+    private bool searchInitiated = false;
+    private List<ITGOrgData>? allOrganizations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllOrganizations();
+    }
+
+    private async Task GetAllOrganizations()
+    {
+        try
+        {
+            if (!memoryCache.TryGetValue("allOrgsCache", out List<ITGOrgData>? cachedOrgs))
+            {
+                cachedOrgs = (await itGlueApiOrgs.GetITGOrgsAsync()).ToList() ?? new List<ITGOrgData>();
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30));
+                memoryCache.Set("allOrgsCache", cachedOrgs, cacheEntryOptions);
+            }
+            allOrganizations = cachedOrgs ?? new List<ITGOrgData>();
+
+        }
+        catch(Exception ex)
+        {
+            Serilog.Log.Error(ex, "Error in GetAllOrganizations");
+        }
+    }
+
+    private async Task SearchOrganization()
+    {
+        searchInitiated = true;
+        searchedOrg = null;
+        configurations.Clear();
+
+        try
+        {
+            if (!string.IsNullOrEmpty(selectedOrgId))
+            {
+                searchedOrg = await itGlueApiOrgs.GetITGOrgAsync(selectedOrgId);
+                if (searchedOrg != null)
+                {
+                    var allConfigs = await itGlueApiConfigs.GetITGConfigsAsync(selectedOrgId);
+                    configurations = allConfigs.Where(config => !config.Attributes.Archived).ToList();
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Serilog.Log.Error(ex, "An error occurred while searching for organizations");
+        }
+    }
+}

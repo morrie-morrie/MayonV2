@@ -1,0 +1,71 @@
+﻿@page "/admin/microsoft"
+@using Syncfusion.Blazor.Grids;
+@using System.ComponentModel.DataAnnotations;
+@inject AppDbContext _db;
+
+<div>
+<h1>Microsoft Graph API Credentials</h1>
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <p class="alert alert-danger">
+            @errorMessage
+        </p>
+    }
+</div>
+<div class="col-lg-12 control-section">
+    <div class="content-wrapper">
+        <div class="row">
+            <SfGrid TValue="MicrosoftAdminModel" DataSource="@adminMicrosoft" AllowPaging="false">
+                <GridColumns>
+                    <GridColumn Field=@nameof(MicrosoftAdminModel.MsTenantId) HeaderText="Tenant Id" TextAlign="TextAlign.Center"></GridColumn>
+                    <GridColumn Field=@nameof(MicrosoftAdminModel.MsClientId) HeaderText="Client Id" TextAlign="TextAlign.Center"></GridColumn>
+                    <GridColumn Field=@nameof(MicrosoftAdminModel.MsClientSecret) HeaderText="Client Secret" TextAlign="TextAlign.Center"></GridColumn>
+                    <GridColumn Field=@nameof(MicrosoftAdminModel.MsRefreshToken) HeaderText="Refresh Token" TextAlign="TextAlign.Center"></GridColumn>
+                </GridColumns>
+                <GridEditSettings AllowAdding="false" AllowEditing="false" AllowDeleting="false"></GridEditSettings>
+            </SfGrid>
+        </div>
+    </div>
+</div>
+
+@code {
+    IEnumerable<MicrosoftAdminModel> adminMicrosoft;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            adminMicrosoft = await _db.adminMsApiAuths.AsNoTracking()
+                .Select(a => new MicrosoftAdminModel
+                    {
+                        MsTenantId = a.MsTenantId,
+                        MsClientId = a.MsClientId,
+                        MsClientSecret = a.MsClientSecret,
+                        MsRefreshToken = a.MsRefreshToken
+                    }).ToListAsync();
+        }
+        catch (DbUpdateException dbEx)
+        {
+            errorMessage = $"Database exception: {dbEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+        }
+    }
+
+    public class MicrosoftAdminModel
+    {
+        public int Id { get; set; }
+        public string MsTenantId { get; set; }
+        public string MsClientId { get; set; }
+        public string MsClientSecret { get; set; }
+        public string MsRefreshToken { get; set; }
+    }
+}

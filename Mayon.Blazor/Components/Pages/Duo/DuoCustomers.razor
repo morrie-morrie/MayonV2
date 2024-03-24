@@ -1,0 +1,58 @@
+﻿@page "/DuoCustomers"
+@using Mayon.Application.Entities.Duo.Infra;
+@inject AppDbContext _db
+
+<h1>Duo Customers:</h1>
+
+@if (errorMessage != null)
+{
+    <p>@errorMessage</p>
+}
+else
+{
+    <SfGrid DataSource="@duoCustomers" AllowPaging="true" AllowFiltering="true" AllowSorting="true" Toolbar="@(new List<string>() {"Search"})">
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+        <GridPageSettings PageSize="17"></GridPageSettings>
+        <GridSortSettings Columns="@(new List<GridSortColumn> { new GridSortColumn { Field = nameof(Mayon.Application.Entities.Duo.Infra.DuoCustomers.DuoCustomerName), Direction = SortDirection.Ascending } })"></GridSortSettings>
+        <GridColumns>
+            <GridColumn Field=@nameof(Mayon.Application.Entities.Duo.Infra.DuoCustomers.DuoCustomerName) HeaderText="Customer Name" FilterSettings="@(new FilterSettings{Operator = Operator.Contains})" />
+            <GridColumn Field=@nameof(Mayon.Application.Entities.Duo.Infra.DuoCustomers.DuoApiHostname) HeaderText="API Hostname" FilterSettings="@(new FilterSettings{Operator = Operator.Contains})" />
+        </GridColumns>
+    </SfGrid>
+    
+}
+
+@code {
+    
+    IEnumerable<Mayon.Application.Entities.Duo.Infra.DuoCustomers> duoCustomers;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            duoCustomers = await _db.DuoCustomers.AsNoTracking().ToListAsync();
+        }
+        catch (DbUpdateException dbEx)
+        {
+            errorMessage = $"Database exception: {dbEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+        }
+    }
+}
+<style>
+    h1 {
+        font-size: 1.5em;
+        font-weight: bold;
+        margin-top: 0px;
+        outline: none;
+    }
+</style>

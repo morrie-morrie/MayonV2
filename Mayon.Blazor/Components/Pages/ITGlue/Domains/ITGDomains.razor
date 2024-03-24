@@ -1,0 +1,94 @@
+﻿@page "/ITGDomainSearch"
+
+@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@using Microsoft.AspNetCore.Components
+@using Syncfusion.Blazor.Grids
+@rendermode InteractiveServer
+
+@inject ITGlueAPIDomains itGlueApiDomains
+
+<ITGOrganisationSearchComponent OnOrganizationSelected="HandleOrgSelected" />
+
+@if (selectedOrgId != null)
+{
+
+}
+
+@if (domains != null && domains.Any())
+{
+    <h3>Active Domains - @domains.Count</h3>
+    <SfGrid DataSource="@domains" AllowPaging="true" PageSize="10">
+        <GridColumns>
+            <GridColumn Field="Attributes.Name" HeaderText="Domain Name"></GridColumn>
+            <GridColumn Field="Attributes.ExpiresOn" HeaderText="Expires On" Format="dd/MM/yyyy"></GridColumn>
+            <GridColumn HeaderText="URL" TextAlign="TextAlign.Left">
+                <Template>
+                    @{
+                        var domain = (context as ITGDomainData);
+                        if (domain != null && !string.IsNullOrEmpty(domain.Attributes.ResourceUrl))
+                        {
+                            <a href="@domain.Attributes.ResourceUrl" target="_blank">@domain.Attributes.ResourceUrl</a>
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field=@nameof(ITGDomainData.Id) HeaderText="ID"></GridColumn>
+
+        </GridColumns>
+    </SfGrid>
+
+}
+else if (searchInitiated)
+{
+    <p>Loading domains or no domains found for the selected organization...</p>
+}
+
+@code {
+    private string selectedOrgId = "";
+    private List<ITGDomainData>? domains;
+    private bool searchInitiated = false;
+
+    private async Task HandleOrgSelected(string orgId)
+    {
+        selectedOrgId = orgId;
+        searchInitiated = true;
+        domains = null;
+
+        if (!string.IsNullOrEmpty(selectedOrgId))
+        {
+            domains = (await itGlueApiDomains.GetITGDomainsAsync(selectedOrgId)).ToList() ?? new List<ITGDomainData>();
+        }
+    }
+
+    private string FormatDate(DateTimeOffset? date)
+    {
+        return date?.ToString("dd/MM/yyyy") ?? "N/A";
+    }
+}
+<style>
+    .sf-grid .e-rowcell {
+        color: #f8f8f2; /* Soft white */
+    }
+    /* Default link color */
+    a {
+        color: #8ab4f8; /* Light blue - Good visibility on dark backgrounds */
+        text-decoration: none; /* Optional: removes underline */
+    }
+
+        /* Link hover color */
+        a:hover {
+            color: #ff79c6; /* Pastel pink - Indicates interactivity */
+            text-decoration: underline; /* Optional: adds underline on hover */
+        }
+
+        /* Link active color */
+        a:active {
+            color: #50fa7b; /* Neon green - Indicates active/clicked link */
+        }
+
+        /* Link visited color */
+        a:visited {
+            color: #bd93f9; /* Soft purple - Indicates visited links */
+        }
+</style>

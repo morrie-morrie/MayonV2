@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Components\Pages\Admin\Duo\**" />
+    <Compile Remove="Components\Pages\Admin\Microsoft\**" />
+    <Content Remove="Components\Pages\Admin\Duo\**" />
+    <Content Remove="Components\Pages\Admin\Microsoft\**" />
+    <EmbeddedResource Remove="Components\Pages\Admin\Duo\**" />
+    <EmbeddedResource Remove="Components\Pages\Admin\Microsoft\**" />
+    <None Remove="Components\Pages\Admin\Duo\**" />
+    <None Remove="Components\Pages\Admin\Microsoft\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
+    <PackageReference Include="Syncfusion.Blazor" Version="25.1.35" />
+    <PackageReference Include="Syncfusion.Licensing" Version="25.1.35" />
+  </ItemGroup>
+
+  <ItemGroup>
+    
+	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Mayon.Application\Mayon.Application.csproj" />
+    <ProjectReference Include="..\Mayon.Client\Mayon.Client.csproj" />
+  </ItemGroup>
+
+</Project>

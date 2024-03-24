@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Mayon.Application": {
+      "commandName": "Project",
+      "remoteDebugEnabled": true
+    }
+  }
+}

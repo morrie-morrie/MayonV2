@@ -1,0 +1,125 @@
+﻿@page "/ITGOrgs"
+@using Mayon.Application.Entities.ITGlue;
+@using Mayon.Application.Entities.ITGlue.Infra;
+@using Mayon.Application.ITGlue;
+@using Mayon.Application.ITGlue.Services.Endpoints;
+@using Mayon.Application.ITGlue.Services.Persistence
+@inject AppDbContext _db
+@inject ITGlueAPIOrganisations itGlueApiOrgs
+
+<h1>ITGlue Organisations:</h1>
+
+<SfButton CssClass="e-primary" OnClick="@RefreshData">Refresh</SfButton>
+
+@if (operationStatus != null)
+{
+    <p>@operationStatus</p>
+}
+
+@if (errorMessage != null)
+{
+    <p class="error-message">@errorMessage</p>
+}
+else
+{
+    <SfGrid DataSource="@itGlueOrg" AllowPaging="true" AllowFiltering="true" AllowSorting="true" Toolbar="@toolbarItems">
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+        <GridPageSettings PageSize="15"></GridPageSettings>
+        <GridSortSettings Columns="@sortColumns"></GridSortSettings>
+        <GridColumns>
+            <GridColumn Field=@nameof(InfraITGOrganisations.Name) HeaderText="Customer Name">
+                <Template>
+                    @{
+                        var item = context as InfraITGOrganisations;
+                        <a href="@($"https://tp.itglue.com/{item.OrgId}")" target="_blank">@item.Name</a>
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field=@nameof(InfraITGOrganisations.OrganizationStatusName) HeaderText="Status" />
+            <GridColumn Field=@nameof(InfraITGOrganisations.UpdatedAt) HeaderText="Last Modified" />
+            <GridColumn Field=@nameof(InfraITGOrganisations.OrganizationTypeName) HeaderText="Type" />
+        </GridColumns>
+    </SfGrid>
+}
+
+@code {
+    IEnumerable<InfraITGOrganisations>? itGlueOrg;
+    string errorMessage;
+    string operationStatus;
+    List<string> toolbarItems = new List<string>() { "Search" };
+    List<GridSortColumn> sortColumns = new List<GridSortColumn>
+    {
+        new GridSortColumn { Field = nameof(InfraITGOrganisations.Name), Direction = SortDirection.Ascending }
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            itGlueOrg = await _db.ITGOrganisations.AsNoTracking().ToListAsync();
+        }
+        catch (DbUpdateException dbEx)
+        {
+            errorMessage = $"Database exception: {dbEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        errorMessage = null;
+        operationStatus = "Refreshing data, please wait...";
+
+        try
+        {
+            var itgOrgsFromApi = await itGlueApiOrgs.GetITGOrgsAsync(); // Await the async call
+            ITGWriteDB.WriteITGOrgsToDB(itgOrgsFromApi);
+
+            await LoadData();
+            operationStatus = $"Data refreshed successfully. {itgOrgsFromApi.Count()} records found.";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error during refresh: {ex.Message}";
+            operationStatus = "Failed to refresh data.";
+        }
+        finally
+        {
+            StateHasChanged(); // Ensure the UI is updated
+        }
+    }
+}
+<style>
+    .sf-grid .e-rowcell {
+        color: #f8f8f2; /* Soft white */
+    }
+    /* Default link color */
+    a {
+        color: #8ab4f8; /* Light blue - Good visibility on dark backgrounds */
+        text-decoration: none; /* Optional: removes underline */
+    }
+
+        /* Link hover color */
+        a:hover {
+            color: #ff79c6; /* Pastel pink - Indicates interactivity */
+            text-decoration: underline; /* Optional: adds underline on hover */
+        }
+
+        /* Link active color */
+        a:active {
+            color: #50fa7b; /* Neon green - Indicates active/clicked link */
+        }
+
+        /* Link visited color */
+        a:visited {
+            color: #bd93f9; /* Soft purple - Indicates visited links */
+        }
+</style>

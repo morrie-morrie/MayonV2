@@ -1,0 +1,28 @@
+﻿@page "/webrootsites"
+@using Mayon.Application.Entities.Webroot
+@using Mayon.Application.Webroot.Service
+@inject WebrootServices webrootServices
+
+@* List allWebrootSites *@
+<h3>Webroot Sites</h3>
+
+    <ul>
+    @foreach (var webrootSite in allWebrootSites)
+    {
+        <li>@webrootSite.Sites</li>
+    }
+</ul>
+
+
+
+
+@code {
+    private List<WebrootSiteResponse> allWebrootSites;
+
+    protected override async Task OnInitializedAsync()
+    {
+            // allWebrootSites = await webrootServices.GetWebrootOrgs();
+    }
+
+
+}

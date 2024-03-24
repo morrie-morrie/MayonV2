@@ -1,0 +1,98 @@
+﻿@page "/ITGOrgConfigurations"
+
+@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@rendermode InteractiveAuto
+
+@inject ITGlueAPIConfigurations itGlueApiConfigs
+<ITGOrganisationSearchComponent OnOrganizationSelected="HandleOrgSelected" />
+
+@if (selectedOrgId != null)
+{
+
+}
+
+@if (configs != null && configs.Any())
+{
+    <h3>Active Configurations - @configs.Count</h3>
+    <SfGrid DataSource="@configs" AllowPaging="true" PageSize="10" AllowSorting="true" Toolbar="@toolbarItems">
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+        <GridColumns>
+            <GridColumn Field="Attributes.Name" HeaderText="Configuration Name"></GridColumn>
+            <GridColumn HeaderText="URL" TextAlign="TextAlign.Left">
+                <Template>
+                    @{
+                        var configs = (context as ITGConfigData);
+                        if (configs != null && !string.IsNullOrEmpty(configs.Attributes.ResourceUrl))
+                        {
+                            <a href="@configs.Attributes.ResourceUrl" target="_blank">@configs.Attributes.ResourceUrl</a>
+                        }
+                    }
+                </Template>
+            </GridColumn>
+            <GridColumn Field="Attributes.UpdatedAt" HeaderText="Lasted Updated"></GridColumn>
+        </GridColumns>
+    </SfGrid>
+
+}
+else if (searchInitiated)
+{
+    <p>Loading configurations or no configurations found for the selected organization...</p>
+}
+
+@code {
+    private string selectedOrgId = "";
+    private List<ITGConfigData>? configs;
+    private bool searchInitiated = false;
+
+    List<string> toolbarItems = new List<string>() { "Search" };
+    List<GridSortColumn> sortColumns = new List<GridSortColumn>
+    {
+        new GridSortColumn { Field = nameof(ITGDomainAttributes.Name), Direction = SortDirection.Ascending },
+        new GridSortColumn { Field = nameof(ITGDomainAttributes.UpdatedAt), Direction = SortDirection.Ascending }
+    };
+
+
+    private async Task HandleOrgSelected(string orgId)
+    {
+        selectedOrgId = orgId;
+        searchInitiated = true;
+        configs = null;
+
+        if (!string.IsNullOrEmpty(selectedOrgId))
+        {
+            configs = (await itGlueApiConfigs.GetITGConfigsAsync(selectedOrgId)).ToList() ?? new List<ITGConfigData>();
+        }
+    }
+
+    private string FormatDate(DateTimeOffset? date)
+    {
+        return date?.ToString("dd/MM/yyyy") ?? "N/A";
+    }
+}
+<style>
+    .sf-grid .e-rowcell {
+        color: #f8f8f2; /* Soft white */
+    }
+    /* Default link color */
+    a {
+        color: #8ab4f8; /* Light blue - Good visibility on dark backgrounds */
+        text-decoration: none; /* Optional: removes underline */
+    }
+
+        /* Link hover color */
+        a:hover {
+            color: #ff79c6; /* Pastel pink - Indicates interactivity */
+            text-decoration: underline; /* Optional: adds underline on hover */
+        }
+
+        /* Link active color */
+        a:active {
+            color: #50fa7b; /* Neon green - Indicates active/clicked link */
+        }
+
+        /* Link visited color */
+        a:visited {
+            color: #bd93f9; /* Soft purple - Indicates visited links */
+        }
+</style>

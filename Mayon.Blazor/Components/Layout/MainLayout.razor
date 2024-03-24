@@ -1,0 +1,117 @@
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Navigations
+@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+@rendermode InteractiveAuto
+
+<div>
+    <div class="app-bar">
+        <SfAppBar Mode="AppBarMode.Regular">
+            <SfButton CssClass="e-inherit ralign" IconCss="e-icons e-menu" OnClick="@ToggleSidebarVisibility"></SfButton>
+            <h2>Mayon Application</h2>
+        </SfAppBar>
+    </div>
+
+    <div class="app-grid">
+        <div class="sidebar">
+            <div class="main-menu">
+                <div>
+                    <SfTreeView CssClass="main-treeview" ExpandOn="@Expand" TValue="TreeData" FullRowNavigable="true">
+                        <TreeViewFieldsSettings Id="NodeId" Text="NodeText" IconCss="IconCss" DataSource="Treedata" HasChildren="HasChild" ParentID="Pid" NavigateUrl="NavigateUrl">
+                        </TreeViewFieldsSettings>
+                    </SfTreeView>
+                </div>
+            </div>
+        </div>
+
+        <div class="content">
+            @Body
+        </div>
+    </div>
+</div>
+
+@code {
+    // Specifies the value of TreeView component ExpanOn property.
+    public ExpandAction Expand = ExpandAction.Click;
+
+    // Specifies the event handler for Clicked event in Toolbar component.
+    bool SidebarToggle = false;
+
+    public class TreeData
+    {
+        public string? NodeId { get; set; }
+        public string? NodeText { get; set; }
+        public string? IconCss { get; set; }
+        public bool HasChild { get; set; }
+        public string? Pid { get; set; }
+        public string? NavigateUrl { get; set; }
+    }
+
+    private List<TreeData> Treedata = new List<TreeData>();
+       protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Treedata.Add(new TreeData { NodeId = "01", NodeText = "Home", IconCss = "icon-microchip icon", HasChild = false, NavigateUrl = "/" });
+        Treedata.Add(new TreeData { NodeId = "02", NodeText = "Microsoft", IconCss = ".gg-windows", HasChild = true });
+        Treedata.Add(new TreeData { NodeId = "02-01", NodeText = "Tenants", IconCss = "icon-circle-thin icon", Pid = "02", NavigateUrl = "/Tenants" });
+        Treedata.Add(new TreeData { NodeId = "02-02", NodeText = "Licensing Report", IconCss = "icon-circle-thin icon", Pid = "02", NavigateUrl = "/MSLicensing" });
+        Treedata.Add(new TreeData { NodeId = "03", NodeText = "DUO", IconCss = "icon-thumbs-up-alt icon", HasChild = true });
+        Treedata.Add(new TreeData { NodeId = "03-01", NodeText = "Duo Customers", IconCss = "icon-circle-thin icon", Pid = "03", NavigateUrl = "/DuoCustomers" });
+        Treedata.Add(new TreeData { NodeId = "04", NodeText = "ITGlue", IconCss = "icon-thumbs-up-alt icon", HasChild = true });
+        Treedata.Add(new TreeData { NodeId = "04-01", NodeText = "Organisations", IconCss = "icon-circle-thin icon", Pid = "04", NavigateUrl = "/ITGOrgs" });
+        Treedata.Add(new TreeData { NodeId = "04-02", NodeText = "Configurations", IconCss = "icon-circle-thin icon", Pid = "04", NavigateUrl = "/ITGOrgConfigurations" });
+        Treedata.Add(new TreeData { NodeId = "04-03", NodeText = "Customer Search", IconCss = "icon-circle-thin icon", Pid = "04", NavigateUrl = "/ITGOrgSearch" });
+        Treedata.Add(new TreeData { NodeId = "04-04", NodeText = "Domain Search", IconCss = "icon-circle-thin icon", Pid = "04", NavigateUrl = "/ITGDomainSearch" });
+        Treedata.Add(new TreeData { NodeId = "04-05", NodeText = "Users", IconCss = "icon-circle-thin icon", Pid = "04", NavigateUrl = "/ITGUsers" });
+        Treedata.Add(new TreeData { NodeId = "10", NodeText = "Settings", IconCss = "icon-doc-text icon", HasChild = true });
+        Treedata.Add(new TreeData { NodeId = "10-01", NodeText = "Microsoft", IconCss = "icon-doc-text icon", Pid = "10", NavigateUrl = "/admin/microsoft" });
+    }
+
+    void ToggleSidebarVisibility()
+    {
+        SidebarToggle = !SidebarToggle;
+    }
+}
+
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .app-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background-color: #242424;
+        color: #ffffff;
+        padding: 0;
+        width: 100%;
+    }
+
+    .app-grid {
+        display: flex;
+        height: calc(100vh - 60px);
+    }
+
+    .sidebar {
+        background-color: #1f1f1f;
+        width: 230px;
+        overflow-y: auto;
+    }
+
+    .content {
+        background-color: #242424;
+        color: #ffffff;
+        overflow-y: auto;
+        width: calc(100% - 200px);
+        padding: 20px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.6;
+    }
+
+</style>

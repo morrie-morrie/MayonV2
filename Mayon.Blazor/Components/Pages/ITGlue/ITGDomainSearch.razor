@@ -1,0 +1,103 @@
+﻿@* @page "/ITGDomainSearch"
+ *@
+
+@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Caching.Memory
+
+@inject ITGlueAPIOrganisations itGlueApiOrgs
+@inject ITGlueAPIDomains itGlueApiDomains
+@inject IMemoryCache memoryCache
+
+<h3>Search for an Organization for Domains</h3>
+
+<EditForm Model="@this" OnValidSubmit="@SearchOrganization">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (allOrganizations != null)
+    {
+        <InputSelect @bind-Value="selectedOrgId">
+            <option value="">-- Select an Organization --</option>
+            @foreach (var org in allOrganizations)
+            {
+                <option value="@org.Id">@org.Attributes?.Name</option>
+            }
+        </InputSelect>
+    }
+    else
+    {
+        <p>Loading organizations...</p>
+    }
+
+    <button type="submit">Search</button>
+</EditForm>
+
+@if (domains.Any())
+{
+    <h3>Active Domains - @domains.Count</h3>
+    <ul>
+        @foreach (var domain in domains)
+        {
+            <li>
+                @domain.Attributes.Name (ID: @domain.Id, Expires On: @FormatDate(domain.Attributes.ExpiresOn))
+            </li>
+        }
+    </ul>
+}
+else if (searchInitiated)
+{
+    <p>Loading domains or no domains found for the selected organization...</p>
+}
+
+
+@code {
+    private string selectedOrgId = "";
+    private ITGOrgData? searchedOrg;
+    private List<ITGDomainData>? domains = new List<ITGDomainData>();
+    private bool searchInitiated = false;
+    private List<ITGOrgData>? allOrganizations;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllOrganizations();
+    }
+
+    private async Task GetAllOrganizations()
+    {
+        if (!memoryCache.TryGetValue("allOrgsCache", out List<ITGOrgData>? cachedOrgs))
+        {
+            cachedOrgs = (await itGlueApiOrgs.GetITGOrgsAsync()).ToList() ?? new List<ITGOrgData>();
+            var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30));
+            memoryCache.Set("allOrgsCache", cachedOrgs, cacheEntryOptions);
+        }
+        allOrganizations = cachedOrgs ?? new List<ITGOrgData>();
+    }
+    
+    private string FormatDate(DateTimeOffset? date)
+    {
+        return date?.ToString("dd/MM/yyyy") ?? "N/A";
+    }
+
+    private async Task SearchOrganization()
+    {
+        searchInitiated = true;
+        domains.Clear();
+
+        try
+        {
+            if (!string.IsNullOrEmpty(selectedOrgId))
+            {
+                domains = (await itGlueApiDomains.GetITGDomainsAsync(selectedOrgId)).ToList();
+            }
+        }
+        catch (Exception ex)
+        {
+            // Handle exceptions (e.g., log the error, display an error message)
+            Serilog.Log.Error(ex, "An error occurred while searching for domains");
+        }
+    }
+
+
+}

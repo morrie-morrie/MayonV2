@@ -1,0 +1,219 @@
+﻿@page "/ITGUsers"
+@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.Entities.ITGlue.Infra
+@using Mayon.Application.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@using Mayon.Application.ITGlue.Services.Persistence
+@using Syncfusion.Blazor.Popups
+@using Syncfusion.Blazor.Buttons
+@using Syncfusion.Blazor.Grids
+
+
+@inject ITGlueAPIUsers itGlueApiUsers
+
+<h1>ITGlue Users</h1>
+
+<SfGrid DataSource="@users" AllowSelection="true" AllowPaging="true">
+    <GridEvents RowSelected="OnRowSelected" TValue="ITGUserData"></GridEvents>
+    <GridSelectionSettings Type="Syncfusion.Blazor.Grids.SelectionType.Single" Mode="Syncfusion.Blazor.Grids.SelectionMode.Row"></GridSelectionSettings>
+    <GridColumns>
+        <GridColumn Field=@nameof(ITGUserData.Id) IsPrimaryKey="true" HeaderText="Id"></GridColumn>
+        <GridColumn Field="Attributes.Name" HeaderText="Name"></GridColumn>
+        <GridColumn Field="Attributes.Email" HeaderText="Email"></GridColumn>
+        <GridColumn Field="Attributes.LastSignInAt" HeaderText="Last Signin At" Format="dd/MM/yyyy"></GridColumn>
+        <GridColumn Field="Attributes.CreatedAt" HeaderText="Created At" Format="dd/MM/yyyy"></GridColumn>
+        <GridColumn Field="Attributes.UpdatedAt" HeaderText="Updated At" Format="dd/MM/yyyy"></GridColumn>
+    </GridColumns>
+</SfGrid>
+
+@if (selectedUser != null)
+{
+    <SfDialog Visible="@isDialogVisible" Close="OnDialogClose" Width="500px" ShowCloseIcon="true" CssClass="custom-dialog">
+        <DialogTemplates>
+            <Header>
+                <div>User Details</div>
+            </Header>
+            <Content>
+                <div class="user-details">
+                    <div class="profile-container">
+                        <img src="@GetAvatarUrl(selectedUser)" alt="Profile Picture" class="profile-pic"/>
+                    </div>
+                    <div class="info-container">
+                        <h3>@selectedUser.Attributes.Name</h3>
+                        <p><strong>Email:</strong> @selectedUser.Attributes.Email</p>
+                        <p><strong>Last Signin At:</strong> @(selectedUser.Attributes.LastSignInAt?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+                        <p><strong>Created At:</strong> @(selectedUser.Attributes.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+                        <p><strong>Updated At:</strong> @(selectedUser.Attributes.UpdatedAt?.ToString("dd/MM/yyyy") ?? "N/A")</p>
+                        <p><strong>Reputation:</strong> @(selectedUser.Attributes.Reputation?.ToString() ?? "N/A")</p>
+                    </div>
+                </div>
+            </Content>
+        </DialogTemplates>
+    </SfDialog>
+}
+
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="error-message">
+        @errorMessage
+    </div>
+}
+
+
+@code {
+    private List<ITGUserData>? users;
+    private ITGUserData? selectedUser;
+    private string errorMessage = string.Empty;
+    private bool isDialogVisible = false;
+    private string placeholderImageUrl = "path/to/your/placeholder/image.jpg"; // Update with the actual path or URL
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var fetchedUsers = await itGlueApiUsers.GetITGUsersAsync();
+            users = fetchedUsers?.ToList() ?? new List<ITGUserData>();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error fetching ITGUsers: {ex.Message}";
+            Console.WriteLine(errorMessage);
+        }
+    }
+
+    private string GetAvatarUrl(ITGUserData userData)
+    {
+        try
+        {
+            // Check if userData or userData.Attributes is null
+            if (userData?.Attributes == null)
+            {
+                return $"https://i.pravatar.cc/150?u={userData.Id}";
+            }
+
+            // Check if the Avatar property is null or empty
+            if (string.IsNullOrWhiteSpace(userData.Attributes.Avatar))
+            {
+                return $"https://i.pravatar.cc/150?u={userData.Id}";
+            }
+
+            // Optionally, you can also check if the Avatar URL is retrievable/valid.
+            // This might involve sending a HTTP HEAD request to the URL to check if it's accessible.
+            // Note: This can introduce additional latency and should be used judiciously.
+
+            // If the avatar URL is valid and accessible, return it
+            return userData.Attributes.Avatar;
+        }
+        catch (Exception ex)
+        {
+            // Log the exception, if logging is set up in your application
+            Console.WriteLine($"Error fetching avatar: {ex.Message}");
+
+            // Return the placeholder image URL in case of any error
+            return placeholderImageUrl;
+        }
+    }
+
+
+    private void OnRowSelected(RowSelectEventArgs<ITGUserData> args)
+    {
+        try
+        {
+            selectedUser = args.Data;
+            isDialogVisible = true;
+            StateHasChanged(); // Notify the component to re-render
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error in row selection: {ex.Message}");
+        }
+    }
+    
+    private void OnDialogClose()
+    {
+        isDialogVisible = false;
+    }
+
+
+}
+
+
+<style>
+
+    .e-dialog .e-dlg-header {
+        color: green;
+        font-size: 20px;
+        font-weight: normal;
+    }
+
+
+    .e-dialog .e-dlg-content {
+        color: red;
+        font-size: 10px;
+        font-weight: bolder;
+        line-height: normal;
+    }
+
+    .e-dialog .e-btn .e-btn-icon.e-icon-dlg-close {
+    font-size: 12px;
+    color: red;
+}
+
+    .e-dlg-overlay {
+        background-color: slategray;
+        opacity: 0.6;
+    }
+
+    /* To change the icon content */
+    .e-dialog .e-south-east::before, .e-dialog .e-south-west::before {
+        content: "\f047";
+    }
+
+    /* To set the icon pack */
+    .e-dialog .e-resize-handle {
+        font: normal normal normal 14px/1 FontAwesome;
+    }
+
+
+    .user-details {
+        display: flex; /* Enable flexbox */
+        align-items: flex-start; /* Align items to the start of the cross axis */
+        gap: 20px; /* Add space between the image and text content */
+        padding: 20px;
+        font-family: Arial, sans-serif;
+    }
+
+    .profile-container {
+        flex-shrink: 0; /* Prevent the image from shrinking */
+    }
+
+    .profile-pic {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .info-container {
+        flex-grow: 1; /* Allow the text content to grow and fill the space */
+    }
+
+        .info-container p,
+        .info-container h3 {
+            color: #d0d0d0; /* Lighter text color for dark theme */
+        }
+
+            .info-container p strong {
+                color: #a0a0a0
+                display: block; /* Make the label a block to align with the text below */
+            }
+
+    .error-message {
+        color: #ff6f6f; /* Error color that stands out on dark background */
+    }
+
+    .selected-id {
+        margin-top: 10px;
+    }
+</style>

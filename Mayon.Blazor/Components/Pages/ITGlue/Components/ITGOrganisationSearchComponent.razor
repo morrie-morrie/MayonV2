@@ -1,0 +1,67 @@
+﻿@using Mayon.Application.Entities.ITGlue
+@using Mayon.Application.ITGlue.Services.Endpoints
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Caching.Memory
+@using Microsoft.AspNetCore.Components
+@rendermode InteractiveAuto
+
+@inject ITGlueAPIOrganisations itGlueApiOrgs
+@inject IMemoryCache memoryCache
+
+<EditForm Model="@this" OnValidSubmit="@OnFormSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    @if (allOrganizations != null)
+    {
+        <InputSelect @bind-Value="selectedOrgId" class="e-select">
+            <option value="">-- Select an Organisation --</option>
+             @foreach (var org in allOrganizations.Where(o => o.Attributes.OrganizationStatusId != 7628 &&
+                                                              o.Attributes.OrganizationTypeId != 15065 &&
+                                                              o.Attributes.OrganizationTypeId != 92379 &&
+                                                              o.Attributes.OrganizationTypeId != 15070 &&
+                                                              o.Attributes.OrganizationTypeId != 91776))
+            {
+                <option value="@org.Id">@org.Attributes?.Name</option>
+            }
+        </InputSelect>
+        <Syncfusion.Blazor.Buttons.SfButton class="btn-primary" Type="Submit">Search</Syncfusion.Blazor.Buttons.SfButton>
+    }
+    else
+    {
+        <p>Loading organisations...</p>
+    }
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public EventCallback<string> OnOrganizationSelected { get; set; }
+
+    private string selectedOrgId;
+    private List<ITGOrgData> allOrganizations;
+
+    
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllOrganizations();
+    }
+
+    private async Task GetAllOrganizations()
+    {
+        if (!memoryCache.TryGetValue("allOrgsCache", out List<ITGOrgData> cachedOrgs))
+        {
+            cachedOrgs = (await itGlueApiOrgs.GetITGOrgsAsync()).ToList() ?? new List<ITGOrgData>();
+            var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30));
+            memoryCache.Set("allOrgsCache", cachedOrgs, cacheEntryOptions);
+        }
+        allOrganizations = cachedOrgs;
+    }
+
+    private async Task OnFormSubmit()
+    {
+        await OnOrganizationSelected.InvokeAsync(selectedOrgId);
+    }
+}

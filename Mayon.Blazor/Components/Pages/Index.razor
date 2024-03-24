@@ -1,0 +1,227 @@
+﻿@page "/"
+@using Mayon.Application.Entities.Microsoft.Infra.AzureAD
+@inject AppDbContext _db
+
+@if (isLoading)
+{
+    <p>Loading...</p>
+}
+else if (errorMessage != null)
+{
+    <p class="error-message">@errorMessage</p>
+}
+else
+{
+    <div class="circle-container">
+        <div class="circle">@totalTenants</div>
+        <div class="total">Total Tenants</div>
+    </div>
+
+    <div class="tenant-list">
+        @foreach (var tenant in MSTenants)
+        {
+            <div class="tenant-item">
+                <div class="tenant-name">@tenant.MsTenantDisplayName</div>
+                <div class="tenant-id">@tenant.MsTenantCustomerId</div>
+            </div>
+        }
+    </div>
+
+    <div class="pagination-controls">
+        <button @onclick="PreviousPage" disabled="@IsFirstPage">Previous</button>
+        <span>Page @currentPage</span>
+        <button @onclick="NextPage" disabled="@IsLastPage">Next</button>
+    </div>
+}
+
+
+
+
+@code {
+    IEnumerable<InfraMsTenants> MSTenants;
+    int NumTenants;
+    string errorMessage;
+    bool isLoading = true;
+
+    // Pagination specific fields
+    private int pageSize = 10; // Number of tenants per page
+    private int currentPage = 1; // Current page number, default is 1
+    private int totalTenants; // Total number of tenants for pagination
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            var query = _db.infraMsTenants.AsNoTracking();
+            totalTenants = await query.CountAsync();
+            MSTenants = await query.Skip((currentPage - 1) * pageSize).Take(pageSize).ToListAsync();
+            NumTenants = MSTenants.Count();
+        }
+        catch (DbUpdateException dbEx)
+        {
+            errorMessage = $"Error accessing the database: {dbEx.InnerException?.Message ?? dbEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private bool IsFirstPage => currentPage == 1;
+    private bool IsLastPage => currentPage >= Math.Ceiling((double)totalTenants / pageSize);
+
+    private void PreviousPage()
+    {
+        if (!IsFirstPage)
+        {
+            currentPage--;
+            LoadData();
+        }
+    }
+
+    private void NextPage()
+    {
+        if (!IsLastPage)
+        {
+            currentPage++;
+            LoadData();
+        }
+    }
+}
+
+
+<style>
+    /* General background and text colors */
+    body, html {
+        font-family: 'Segoe UI', Arial, sans-serif;
+        background-color: #121212; /* Dark background */
+        color: #E0E0E0; /* Light text */
+        margin: 0;
+        
+    }
+
+    /* Styling for the circle container */
+    .circle-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin: 20px auto;
+        padding: 10px;
+    }
+
+    .circle {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background-color: #1E88E5; /* Brighter blue for contrast */
+        color: #FFFFFF;
+        font-size: 32px;
+        font-weight: bold;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5); /* Enhanced shadow for depth */
+        transition: transform 0.2s ease;
+    }
+
+        .circle:hover {
+            transform: scale(1.05); /* Slightly larger on hover */
+        }
+
+    .total {
+        margin-top: 10px;
+        font-size: 16px;
+        color: #B0BEC5; /* Grey text for less contrast */
+    }
+
+    /* Error message styling */
+    .error-message {
+        color: #FFCCBC; /* Light red for visibility */
+        background-color: #D32F2F; /* Dark red background */
+        padding: 10px;
+        border-radius: 5px;
+        margin: 20px 0;
+    }
+
+/* Styling for tenant list to create a two-column layout */
+.tenant-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Creates two columns */
+    gap: 20px; /* Adjusts space between grid items */
+    margin: 20px 0;
+}
+
+.tenant-item {
+    display: flex;
+    flex-direction: column;
+    padding: 15px;
+    background-color: #263238; /* Dark mode item background */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+
+        .tenant-item:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4); /* Deeper shadow on hover */
+        }
+
+    .tenant-name, .tenant-id {
+        margin: 5px 0;
+    }
+
+    .tenant-name {
+        font-size: 15px;
+        color: #E0E0E0; /* Light text for readability */
+    }
+
+    .tenant-id {
+        font-size: 12px;
+        color: #B0BEC5; /* Grey text for differentiation */
+    }
+
+    /* Pagination controls styling */
+    .pagination-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 20px 0;
+        gap: 15px;
+    }
+
+        .pagination-controls button {
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #FFFFFF;
+            background-color: #1E88E5; /* Button color */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            outline: none;
+        }
+
+            .pagination-controls button:hover {
+                background-color: #1565C0; /* Darker on hover */
+            }
+
+            .pagination-controls button:disabled {
+                background-color: #37474F;
+                cursor: default;
+            }
+
+        .pagination-controls span {
+            font-size: 16px;
+            color: #B0BEC5; /* Grey text */
+        }
+
+
+</style>

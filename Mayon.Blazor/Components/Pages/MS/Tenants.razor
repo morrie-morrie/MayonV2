@@ -1,0 +1,54 @@
+﻿@page "/Tenants"
+@using Mayon.Application.Entities.Microsoft.Infra.AzureAD
+@inject AppDbContext _db
+
+<h1>Microsoft Tenant List:</h1>
+
+@if (errorMessage != null)
+{
+    <p>@errorMessage</p>
+}
+else
+{
+    <SfGrid DataSource="@MSTenants" AllowPaging="true" AllowFiltering="true" AllowSorting="true" Width="950" Toolbar="@(new List<string>() {"Search"})">
+        <GridFilterSettings Type="Syncfusion.Blazor.Grids.FilterType.Excel"></GridFilterSettings>
+        <GridPageSettings PageSize="17"></GridPageSettings>
+        <GridSortSettings>
+            <GridSortColumns>
+                <GridSortColumn Field="@nameof(InfraMsTenants.MsTenantDisplayName)" Direction="SortDirection.Ascending"></GridSortColumn>
+            </GridSortColumns>
+</GridSortSettings>
+        <GridColumns>
+            <GridColumn Field=@nameof(InfraMsTenants.MsTenantDisplayName) HeaderText="Display Name" Width="300" FilterSettings="@(new FilterSettings{Operator = Operator.Contains})" />
+            <GridColumn Field=@nameof(InfraMsTenants.MsTenantCustomerId) HeaderText="Tenant ID" Width="300"/>
+
+            <GridColumn Field=@nameof(InfraMsTenants.MsTenantDefaultDomainName) HeaderText="Default Domain Name" Width="300" FilterSettings="@(new FilterSettings{Operator = Operator.Contains})" />
+        </GridColumns>
+    </SfGrid>
+}
+
+@code {
+    IEnumerable<InfraMsTenants> MSTenants;
+    string errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            MSTenants = await _db.infraMsTenants.AsNoTracking().ToListAsync();
+        }
+        catch (DbUpdateException dbEx)
+        {
+            errorMessage = $"Database exception: {dbEx.Message}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"An unexpected error occurred: {ex.Message}";
+        }
+    }
+}
