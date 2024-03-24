@@ -3,13 +3,14 @@ using System.Net.Http.Headers;
 using System.Text;
 
 namespace Mayon.Application.NCentral;
-public class NCentralAPI
+
+public class NcentralApi
 {
     private readonly HttpClient _client;
     private string _cachedAccessToken;
     private DateTime _accessTokenExpiry;
 
-    public NCentralAPI(HttpClient client)
+    public NcentralApi(HttpClient client)
     {
         _client = client;
     }
@@ -28,12 +29,12 @@ public class NCentralAPI
         public static string GetToken()
         {
             if (string.IsNullOrEmpty(_token) || DateTime.UtcNow >= _expiry)
-                return null;
-            return _token;
+                return string.Empty;
+            return _token!;
         }
     }
 
-    public async Task<string> GetNcentralAccessToken(string jwt)
+    public async Task<string?> GetNcentralAccessToken(string jwt)
     {
         // Check if a valid token is already cached
         if (!string.IsNullOrWhiteSpace(_cachedAccessToken) && DateTime.UtcNow < _accessTokenExpiry)
@@ -78,7 +79,7 @@ public class NCentralAPI
         }
     }
 
-    public async Task<bool> ValidateAccessToken(string accessToken)
+    public async Task<bool> ValidateAccessToken(string? accessToken)
     {
         if (string.IsNullOrWhiteSpace(accessToken))
         {
@@ -112,7 +113,7 @@ public class NCentralAPI
         }
     }
 
-    public async Task<List<Customer>> GetAllCustomers(string accessToken)
+    public async Task<List<Customer>> GetAllCustomers(string? accessToken)
     {
         if (string.IsNullOrWhiteSpace(accessToken))
         {

@@ -43,7 +43,7 @@ public static class NCentralApiHandler
 
     private static async Task ExecuteNCentralAPIChoice(int choice, ServiceProvider serviceProvider, IConfiguration configuration)
     {
-        var api = serviceProvider.GetRequiredService<NCentralAPI>();
+        var api = serviceProvider.GetRequiredService<NcentralApi>();
         string jwtToken = configuration["APIs:NCentral:jwt"];
 
         switch (choice)

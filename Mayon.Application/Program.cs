@@ -76,11 +76,11 @@ public class Program
             return new ProofpointApiService(client);
         });
 
-        services.AddScoped<NCentralAPI>(serviceProvider =>
+        services.AddScoped<NcentralApi>(serviceProvider =>
         {
             var httpClientFactoryService = serviceProvider.GetRequiredService<HttpClientFactoryService>();
             var client = httpClientFactoryService.CreateClient("NCentralClient");
-            return new NCentralAPI(client);
+            return new NcentralApi(client);
         });
 
         //services.AddScoped<WebrootServices>(serviceProvider =>
