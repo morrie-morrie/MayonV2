@@ -5,7 +5,8 @@ using Microsoft.EntityFrameworkCore;
 using Serilog;
 
 namespace Mayon.Application.ITGlue.Services.Persistence;
-public class ITGWriteDB
+
+public static class ItgWriteDb
 {
     public static void WriteITGOrgsToDB(IEnumerable<ITGOrgData> itgOrgsResponse)
     {
@@ -29,7 +30,7 @@ public class ITGWriteDB
                 CreatedAt = org.Attributes.CreatedAt,
                 UpdatedAt = org.Attributes.UpdatedAt
             };
-            var existingOrg = existingOrgs.FirstOrDefault(o => o.Id == infraOrg.Id);
+            var existingOrg = existingOrgs.Find(o => o.Id == infraOrg.Id);
             if (existingOrg != null)
             {
                 db.Entry(infraOrg).State = EntityState.Modified;

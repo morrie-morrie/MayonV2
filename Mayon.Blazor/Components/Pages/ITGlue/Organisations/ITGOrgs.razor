@@ -81,7 +81,7 @@ else
         try
         {
             var itgOrgsFromApi = await itGlueApiOrgs.GetITGOrgsAsync(); // Await the async call
-            ITGWriteDB.WriteITGOrgsToDB(itgOrgsFromApi);
+            ItgWriteDb.WriteITGOrgsToDB(itgOrgsFromApi);
 
             await LoadData();
             operationStatus = $"Data refreshed successfully. {itgOrgsFromApi.Count()} records found.";
