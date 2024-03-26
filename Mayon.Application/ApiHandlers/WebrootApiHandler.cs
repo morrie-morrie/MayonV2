@@ -3,6 +3,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
+namespace Mayon.Application.ApiHandlers;
+
 public static class WebrootApiHandler
 {
     public static async Task HandleWebrootApi(ServiceProvider serviceProvider, IConfiguration configuration)

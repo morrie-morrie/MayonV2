@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace Mayon.Application.ApiHandlers;
+
 public static class ITGlueApiHandler
 {
     public static async Task HandleITGlueApi(ServiceProvider serviceProvider, IConfiguration configuration)

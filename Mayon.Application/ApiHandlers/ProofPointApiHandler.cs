@@ -1,6 +1,8 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace Mayon.Application.ApiHandlers;
+
 public static class ProofPointApiHandler
 {
     public static async Task HandleProofPointApi(ServiceProvider serviceProvider, IConfiguration configuration)

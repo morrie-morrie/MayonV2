@@ -2,6 +2,8 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace Mayon.Application.ApiHandlers;
+
 public static class NCentralApiHandler
 {
     private static string _accessToken; // Static field to store accessToken

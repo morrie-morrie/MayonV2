@@ -4,6 +4,8 @@ using Mayon.Application.Services.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
+namespace Mayon.Application.ApiHandlers;
+
 public static class DuoApiHandler
 {
     public static async Task HandleDuoApi(ServiceProvider serviceProvider, IConfiguration configuration)

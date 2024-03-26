@@ -7,6 +7,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
+namespace Mayon.Application.ApiHandlers;
+
 public static class MicrosoftGraphApiHandler
 {
     public static async Task HandleMicrosoftGraphApi(ServiceProvider serviceProvider, IConfiguration configuration)

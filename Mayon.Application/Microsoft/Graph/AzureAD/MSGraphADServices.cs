@@ -3,6 +3,7 @@ using Mayon.Application.Microsoft.Graph.Services;
 using System.Collections.Concurrent;
 
 namespace Mayon.Application.Microsoft.Graph.AzureAD;
+
 public static class TokenCache
 {
     private static readonly ConcurrentDictionary<string, (string token, DateTime expiry)> _cache = new ConcurrentDictionary<string, (string, DateTime)>();
@@ -58,6 +59,6 @@ public static class MSGraphADServices
     {
         var token = MSGraphAPI.GetTenantsMSGraphRestToken(tenantId);
         var msTenantUsers = MSGraphAPI.ExecuteAndDeserialize<MsTenantUsers>(baseGraph, $"/v1.0/Users?$Top=999", token);
-        return msTenantUsers.Value;
+        return msTenantUsers?.Value ?? new List<MsTenantUser>();
     }
 }

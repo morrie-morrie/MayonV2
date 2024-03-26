@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 namespace Mayon.Application.Duo.RestApi;
+
 public class DuoAuth
 {
     private readonly IDateService _dateservice;
@@ -19,7 +20,7 @@ public class DuoAuth
         _dateservice = dateservice;
     }
 
-    public List<string>? GetAuthHeadersForAllCustomers(IConfiguration configuration)
+    public List<string> GetAuthHeadersForAllCustomers(IConfiguration configuration)
     {
         using var db = new AppDbContext();
         var customers = db.DuoCustomers
@@ -121,9 +122,9 @@ public class DuoAuth
 
     public string GetAuthHeaderForCustomer(DuoCustomers customer, IConfiguration configuration)
     {
-        var apihostname = configuration["APIs:Duo:ApiHostName"];
-        var ikey = configuration["APIs:Duo:IntergrationKey"];
-        var skey = configuration["APIs:Duo:SecretKey"]; ;
+        var apihostname = configuration["APIs:Duo:ApiHostName"] ?? string.Empty;
+        var ikey = configuration["APIs:Duo:IntergrationKey"] ?? string.Empty;
+        var skey = configuration["APIs:Duo:SecretKey"] ?? string.Empty;
         var duoAccountId = customer.DuoAccountId;
         var endpoint = "/admin/v1/users";
         var requestParams = $"account_id={duoAccountId}";
