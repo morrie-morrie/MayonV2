@@ -18,13 +18,13 @@ else
     </div>
 
     <div class="tenant-list">
-        @foreach (var tenant in MSTenants)
-        {
-            <div class="tenant-item">
-                <div class="tenant-name">@tenant.MsTenantDisplayName</div>
-                <div class="tenant-id">@tenant.MsTenantCustomerId</div>
-            </div>
-        }
+          @foreach (var tenant in MSTenants ?? Enumerable.Empty<InfraMsTenants>())
+          {
+              <div class="tenant-item">
+                  <div class="tenant-name">@tenant?.MsTenantDisplayName</div>
+                  <div class="tenant-id">@tenant?.MsTenantCustomerId</div>
+              </div>
+          }
     </div>
 
     <div class="pagination-controls">
@@ -38,9 +38,9 @@ else
 
 
 @code {
-    IEnumerable<InfraMsTenants> MSTenants;
+    IEnumerable<InfraMsTenants>? MSTenants;
     int NumTenants;
-    string errorMessage;
+    string? errorMessage;
     bool isLoading = true;
 
     // Pagination specific fields
@@ -84,7 +84,7 @@ else
         if (!IsFirstPage)
         {
             currentPage--;
-            LoadData();
+            _ = LoadData(); // Use fire-and-forget to call the async method without awaiting it
         }
     }
 
@@ -93,7 +93,7 @@ else
         if (!IsLastPage)
         {
             currentPage++;
-            LoadData();
+           _ = LoadData();
         }
     }
 }
