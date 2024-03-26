@@ -1,6 +1,6 @@
 ﻿namespace Mayon.Application.Entities.Duo.DTO;
 
-public class DuoDTOAuth
+public class DuoDtoAuth
 {
     public int Id { get; set; }
     public string ApiHostName { get; set; }
