@@ -44,6 +44,7 @@
     
 
 
+
     protected override async Task OnInitializedAsync()
     {
         await GetAllOrganizations();
@@ -51,9 +52,10 @@
 
     private async Task GetAllOrganizations()
     {
-        if (!memoryCache.TryGetValue("allOrgsCache", out List<ITGOrgData> cachedOrgs))
+        List<ITGOrgData> cachedOrgs;
+        if (!memoryCache.TryGetValue("allOrgsCache", out cachedOrgs))
         {
-            cachedOrgs = (await itGlueApiOrgs.GetITGOrgsAsync()).ToList() ?? new List<ITGOrgData>();
+            cachedOrgs = (await itGlueApiOrgs.GetITGOrgsAsync()).ToList();
             var cacheEntryOptions = new MemoryCacheEntryOptions().SetSlidingExpiration(TimeSpan.FromMinutes(30));
             memoryCache.Set("allOrgsCache", cachedOrgs, cacheEntryOptions);
         }

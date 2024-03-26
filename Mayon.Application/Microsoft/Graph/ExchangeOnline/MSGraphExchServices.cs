@@ -5,6 +5,7 @@ using Mayon.Application.Microsoft.Graph.Services;
 using Serilog;
 
 namespace Mayon.Application.Microsoft.Graph.ExchangeOnline;
+
 internal static class MSGraphExchServices
 {
     private const string baseExchangeGraph = "https://outlook.office365.com";
@@ -45,13 +46,9 @@ internal static class MSGraphExchServices
                     Console.ResetColor();
                     Console.WriteLine($"Mailbox Type: {msExchangeMailbox.RecipientType}");
                     Console.WriteLine($"Primary Email Address: {msExchangeMailbox.PrimarySmtpAddress}");
-                    foreach (string alias in msExchangeMailbox.EmailAddresses)
+                    foreach (string alias in msExchangeMailbox.EmailAddresses.Where(a => a.StartsWith("smtp:")))
                     {
-                        if (alias.StartsWith("smtp:"))
-
-                        {
-                            Console.WriteLine($"Aliases: {alias}");
-                        }
+                        Console.WriteLine($"Aliases: {alias}");
                     }
                     Console.WriteLine();
                 }
