@@ -31,6 +31,7 @@ else
         <button @onclick="PreviousPage" disabled="@IsFirstPage">Previous</button>
         <span>Page @currentPage</span>
         <button @onclick="NextPage" disabled="@IsLastPage">Next</button>
+
     </div>
 }
 
@@ -79,21 +80,21 @@ else
     private bool IsFirstPage => currentPage == 1;
     private bool IsLastPage => currentPage >= Math.Ceiling((double)totalTenants / pageSize);
 
-    private void PreviousPage()
+    private async Task PreviousPage()
     {
         if (!IsFirstPage)
         {
             currentPage--;
-            _ = LoadData(); // Use fire-and-forget to call the async method without awaiting it
+            await LoadData(); // Await the completion of the async method
         }
     }
 
-    private void NextPage()
+    private async Task NextPage()
     {
         if (!IsLastPage)
         {
             currentPage++;
-           _ = LoadData();
+            await LoadData(); // Await the completion of the async method
         }
     }
 }
