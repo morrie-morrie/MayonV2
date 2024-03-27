@@ -40,7 +40,6 @@ else
 
 @code {
     IEnumerable<InfraMsTenants>? MSTenants;
-    int NumTenants;
     string? errorMessage;
     bool isLoading = true;
 
@@ -56,12 +55,17 @@ else
 
     private async Task LoadData()
     {
+        isLoading = false; // Set loading state to false at the beginning
+
         try
         {
-            var query = _db.infraMsTenants.AsNoTracking();
+            var query = _db.infraMsTenants
+                           .AsNoTracking()
+                           .OrderBy(tenant => tenant.MsTenantDisplayName);
             totalTenants = await query.CountAsync();
-            MSTenants = await query.Skip((currentPage - 1) * pageSize).Take(pageSize).ToListAsync();
-            NumTenants = MSTenants.Count();
+            MSTenants = await query.Skip((currentPage - 1) * pageSize)
+                                   .Take(pageSize)
+                                   .ToListAsync();
         }
         catch (DbUpdateException dbEx)
         {
@@ -70,10 +74,6 @@ else
         catch (Exception ex)
         {
             errorMessage = $"An unexpected error occurred: {ex.Message}";
-        }
-        finally
-        {
-            isLoading = false;
         }
     }
 
