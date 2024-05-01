@@ -19,8 +19,8 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Syncfusion.Blazor" Version="25.1.41" />
-    <PackageReference Include="Syncfusion.Licensing" Version="25.1.41" />
+    <PackageReference Include="Syncfusion.Blazor" Version="25.1.42" />
+    <PackageReference Include="Syncfusion.Licensing" Version="25.1.42" />
   </ItemGroup>
 
   <ItemGroup>
