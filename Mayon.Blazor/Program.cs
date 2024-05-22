@@ -14,6 +14,8 @@ using Syncfusion.Blazor;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.AddServiceDefaults();
+
 Log.Logger = new LoggerConfiguration()
     .ReadFrom.Configuration(builder.Configuration)
     .WriteTo.Console(
@@ -66,6 +68,8 @@ builder.Services.AddScoped<ITGAuth>();
 HttpClientConfigurationManager.ConfigureClients(builder.Services, builder.Configuration);
 
 var app = builder.Build();
+
+app.MapDefaultEndpoints();
 
 if (!app.Environment.IsDevelopment())
 {

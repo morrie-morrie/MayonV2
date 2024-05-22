@@ -19,18 +19,19 @@
 
   <ItemGroup>
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
-    <PackageReference Include="Syncfusion.Blazor" Version="25.2.3" />
-    <PackageReference Include="Syncfusion.Licensing" Version="25.2.3" />
+    <PackageReference Include="Syncfusion.Blazor" Version="25.2.5" />
+    <PackageReference Include="Syncfusion.Licensing" Version="25.2.5" />
   </ItemGroup>
 
   <ItemGroup>
     
-	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.4" />
+	  <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.5" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Mayon.Application\Mayon.Application.csproj" />
     <ProjectReference Include="..\Mayon.Client\Mayon.Client.csproj" />
+    <ProjectReference Include="..\MayonV2.ServiceDefaults\MayonV2.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>
